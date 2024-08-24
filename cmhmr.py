@@ -12,10 +12,9 @@ class Cliente:
         self.nombre = nombre
 
 class Distrito:
-    def __init__(self, nombre, origen, distancia):
+    def __init__(self, nombre):
         self.nombre = nombre
-        self.origen = origen
-        self.distancia = distancia
+        self.conexiones : dict[str, int] = {}
 
 class Orden:
     def __init__(self, producto, cliente, distrito):
@@ -25,36 +24,42 @@ class Orden:
 
 class Grafo:
     def __init__(self):
-        self.vertices = {}
+        self.vertices : dict[str, Distrito] = {}
 
-    def agregar_distrito(self, nombre):
-        if nombre not in self.vertices:
-            self.vertices[nombre] = {}
+    def get(self, nombre):
+        return self.vertices.get(nombre)
+
+    def agregar_distrito(self, nombre : str, distrito : Distrito):
+        if distrito not in self.vertices.items():
+            self.vertices[nombre] = distrito
 
     def agregar_camino(self, origen, destino, distancia):
         if origen in self.vertices and destino in self.vertices:
-            self.vertices[origen][destino] = distancia
-            self.vertices[destino][origen] = distancia  # Grafo no dirigido
+            self.vertices[origen].conexiones[destino] = distancia
+            self.vertices[destino].conexiones[origen] = distancia  # Grafo no dirigido
 
-    def dijkstra(self, inicio):
+    def dijkstra(self, inicio, destino : str = None):
         distancias = {v: float('inf') for v in self.vertices}
         distancias[inicio] = 0
-        pq = [(0, inicio)]
+        queue = [(0, inicio)]
 
-        while pq:
-            distancia_actual, vertice_actual = heapq.heappop(pq)
+        while queue:
+            distancia_actual, vertice_actual = heapq.heappop(queue)
 
             if distancia_actual > distancias[vertice_actual]:
                 continue
 
-            for vecino, peso in self.vertices[vertice_actual].items():
+            for vecino, peso in self.vertices[vertice_actual].conexiones.items():
                 distancia = distancia_actual + peso
 
                 if distancia < distancias[vecino]:
                     distancias[vecino] = distancia
-                    heapq.heappush(pq, (distancia, vecino))
+                    heapq.heappush(queue, (distancia, vecino))
 
-        return distancias
+        if destino:
+            return distancias[destino] if distancias[destino] != float('inf') else None
+        else:
+            return distancias
     
 class ColaFIFO:
     def __init__(self):
@@ -88,7 +93,8 @@ class SistemaVentas:
         self.clientes[dni] = cliente
 
     def agregar_distrito(self, nombre):
-        self.grafo_distritos.agregar_distrito(nombre)
+        distrito = Distrito(nombre)
+        self.grafo_distritos.agregar_distrito(nombre, distrito)
 
     def agregar_ruta(self, origen, destino, distancia):
         self.grafo_distritos.agregar_camino(origen, destino, distancia)
@@ -96,48 +102,53 @@ class SistemaVentas:
     def realizar_orden(self, dni_cliente, nombre_producto, nombre_distrito):
         cliente = self.clientes.get(dni_cliente)
         producto = self.productos.get(nombre_producto)
-        distrito = nombre_distrito
+        distrito = self.grafo_distritos.get(nombre_distrito)
 
+        # Mover la funcionalidad de esta parte al GUI:
         if not cliente:
-            print(f"Cliente con DNI {dni_cliente} no encontrado, registrando nuevo cliente.")
+            # print(f"Cliente con DNI {dni_cliente} no encontrado, registrando nuevo cliente.")
             self.agregar_cliente(dni_cliente, f"Cliente {dni_cliente}")
             cliente = self.clientes[dni_cliente]
 
         if not producto:
-            print(f"Producto {nombre_producto} no disponible.")
+            # print(f"Producto {nombre_producto} no disponible.")
+            return
+
+        if not distrito:
+            # print(f"Distrito {nombre_distrito} no disponible.")
             return
 
         orden = Orden(producto, cliente, distrito)
         self.ordenes.encolar(orden)
-        print(f"Orden para {producto.nombre} de {cliente.nombre} en {distrito} ha sido creada.")
+        # print(f"Orden para {producto.nombre} de {cliente.nombre} en {distrito.nombre} ha sido creada.")
 
     def procesar_ordenes(self):
         while not self.ordenes.esta_vacia():
             orden : Orden = self.ordenes.desencolar()
-            distancia = self.grafo_distritos.dijkstra('Flores').get(orden.distrito)
-            print(f"Procesando orden de {orden.producto.nombre} para {orden.cliente.nombre}.")
-            print(f"Ruta más corta a {orden.distrito} es de {distancia} km.")
+            distancia = self.grafo_distritos.dijkstra('Flores', orden.distrito.nombre)
+            # print(f"Procesando orden de {orden.producto.nombre} para {orden.cliente.nombre}.")
+            # print(f"Ruta más corta a {orden.distrito.nombre} es de {distancia} km.")
 
+def testSistemaVentas():
+    # Crear el sistema
+    sistema = SistemaVentas()
 
-# Crear el sistema
-sistema = SistemaVentas()
+    # Agregar distritos y rutas
+    sistema.agregar_distrito("Flores")
+    sistema.agregar_distrito("Palermo")
+    sistema.agregar_distrito("Belgrano")
 
-# Agregar distritos y rutas
-sistema.agregar_distrito("Flores")
-sistema.agregar_distrito("Palermo")
-sistema.agregar_distrito("Belgrano")
+    sistema.agregar_ruta("Flores", "Palermo", 5)
+    sistema.agregar_ruta("Flores", "Belgrano", 8)
+    sistema.agregar_ruta("Palermo", "Belgrano", 3)
 
-sistema.agregar_ruta("Flores", "Palermo", 5)
-sistema.agregar_ruta("Flores", "Belgrano", 8)
-sistema.agregar_ruta("Palermo", "Belgrano", 3)
+    # Agregar productos
+    sistema.agregar_producto("Laptop", 1500)
+    sistema.agregar_producto("Smartphone", 700)
 
-# Agregar productos
-sistema.agregar_producto("Laptop", 1500)
-sistema.agregar_producto("Smartphone", 700)
+    # Agregar clientes
+    sistema.agregar_cliente("12345678", "Juan Perez")
 
-# Agregar clientes
-sistema.agregar_cliente("12345678", "Juan Perez")
-
-# Realizar y procesar órdenes
-sistema.realizar_orden("12345678", "Laptop", "Palermo")
-sistema.procesar_ordenes()
+    # Realizar y procesar órdenes
+    sistema.realizar_orden("12345678", "Laptop", "Palermo")
+    sistema.procesar_ordenes()

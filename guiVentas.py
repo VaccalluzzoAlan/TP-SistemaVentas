@@ -32,7 +32,11 @@ def test():
 
     G.add_weighted_edges_from(aristas)
     
-    print(G.edges(data=True))
+    pos = nx.spring_layout(G)
+    nx.draw_networkx(G, pos, with_labels=True, font_weight='bold')
+    edge_labels = nx.get_edge_attributes(G, "weight")
+    nx.draw_networkx_edge_labels(G, pos, edge_labels)
+    plt.show()
 
 def main():
     test()

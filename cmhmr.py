@@ -39,12 +39,17 @@ class Grafo:
             self.vertices[origen].conexiones[destino] = distancia
             self.vertices[destino].conexiones[origen] = distancia  # Grafo no dirigido
 
-    def dijkstra(self, inicio, destino : str = None):
+    def dijkstra(self, inicio, destino : str = None, camino : bool = False):
         distancias = {v: float('inf') for v in self.vertices}
+        caminos = [[(inicio, v, self.vertices[v].conexiones[inicio])] for v in self.vertices if v != inicio]
         distancias[inicio] = 0
         queue = [(0, inicio)]
+        if camino:
+            nodo_anterior = inicio
+        # print("CAMINOS:", caminos)
 
         while queue:
+            # print('1', queue, distancias)
             distancia_actual, vertice_actual = heapq.heappop(queue)
 
             if distancia_actual > distancias[vertice_actual]:
@@ -54,9 +59,23 @@ class Grafo:
                 distancia = distancia_actual + peso
 
                 if distancia < distancias[vecino]:
+                    if camino:
+                        for c in caminos:
+                            # print(vertice_actual, vecino, distancia)
+                            if c[-1][1] == nodo_anterior and c[-1][1] != destino and c[-1][0] != vecino:
+                                c.append((nodo_anterior, vecino, self.vertices[nodo_anterior].conexiones[vecino] + c[-1][2]))
                     distancias[vecino] = distancia
                     heapq.heappush(queue, (distancia, vecino))
+                    if camino:
+                        nodo_anterior = vecino
+                        # print("CAMINOS:", caminos)
+                # print('2', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
 
+        if camino:
+            caminosDist = [(i, c[-1][2]) for i, c in enumerate(caminos)]
+            caminoMinimoIndex = min(caminosDist, key=lambda x: x[1])[0]
+            caminoMinimo = [(arista[0], arista[1]) for arista in caminos[caminoMinimoIndex]]
+            return caminoMinimo
         if destino:
             return distancias[destino] if distancias[destino] != float('inf') else None
         else:
@@ -134,11 +153,16 @@ class SistemaVentas:
             orden : Orden = self.ordenes.desencolar()
             return orden
         
-    def ruta_mas_corta(self, destino, inicio = None):
+    def ruta_mas_corta(self, destino, inicio = None, solo_camino = False):
+        '''
+        Si solo_camino es False, devuelve la distancia minima entre dos distritos.
+        Si solo_camino es True, devuelve cada paso del camino mas corto entre los distritos.
+        Por default, comienza desde el distrito local.
+        '''
         if not inicio:
             inicio = self.local
-        distancia = self.grafo_distritos.dijkstra(inicio, destino)
-        return distancia
+        ruta = self.grafo_distritos.dijkstra(inicio, destino, camino = solo_camino)
+        return ruta
     
     def procesar_ordenes(self):
         ordenes = []
@@ -163,9 +187,13 @@ def testSistemaVentas():
     sistema.agregar_distrito("Flores")
     sistema.agregar_distrito("Palermo")
     sistema.agregar_distrito("Belgrano")
+    sistema.agregar_distrito("4")
 
     sistema.agregar_ruta("Flores", "Palermo", 5)
-    sistema.agregar_ruta("Flores", "Belgrano", 8)
+    sistema.agregar_ruta("Flores", "Belgrano", 9)
+    sistema.agregar_ruta("Flores", "4", 2)
+    sistema.agregar_ruta("4", "Belgrano", 11)
+    sistema.agregar_ruta("Palermo", "4", 3)
     sistema.agregar_ruta("Palermo", "Belgrano", 3)
 
     # Agregar productos

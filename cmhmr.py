@@ -105,7 +105,8 @@ class SistemaVentas:
         self.ordenes = ColaFIFO()
         self.local = localidad
 
-        self.agregar_distrito(self.local)
+        if not self.grafo_distritos.get(self.local):
+            self.agregar_distrito(self.local)
 
     def agregar_producto(self, nombre, precio):
         if nombre not in self.productos:

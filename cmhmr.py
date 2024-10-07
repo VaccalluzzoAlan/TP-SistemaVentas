@@ -2,25 +2,41 @@ import heapq
 from collections import deque
 
 class Producto:
-    def __init__(self, nombre, precio):
+    def __init__(self, nombre : str, precio : int):
         self.nombre = nombre
         self.precio = precio
+        self.id = None
+
+    def setId(self, id : int):
+        self.id = id
 
 class Cliente:
-    def __init__(self, dni, nombre):
+    def __init__(self, dni : str, nombre : str):
         self.dni = dni
         self.nombre = nombre
+        self.id = None
+
+    def setId(self, id : int):
+        self.id = id
 
 class Distrito:
-    def __init__(self, nombre):
+    def __init__(self, nombre : str):
         self.nombre = nombre
         self.conexiones : dict[str, int] = {}
+        self.id = None
+
+    def setId(self, id : int):
+        self.id = id
 
 class Orden:
     def __init__(self, producto, cliente, distrito):
         self.producto : Producto = producto
         self.cliente : Cliente = cliente
         self.distrito : Distrito = distrito
+        self.id = None
+
+    def setId(self, id : int):
+        self.id = id
 
 class Grafo:
     def __init__(self):

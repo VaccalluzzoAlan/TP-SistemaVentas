@@ -19,7 +19,7 @@ def crear_tablas(conn : sqlite3.Connection):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS productos (
                 id INTEGER PRIMARY KEY,
-                nombre TEXT NOT NULL,
+                nombre TEXT NOT NULL UNIQUE,
                 precio INT NOT NULL
             )
         ''')
@@ -37,7 +37,7 @@ def crear_tablas(conn : sqlite3.Connection):
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS distritos (
                 id INTEGER PRIMARY KEY,
-                nombre TEXT NOT NULL
+                nombre TEXT NOT NULL UNIQUE
             )
         ''')
         
@@ -92,6 +92,16 @@ def obtener_productos(conn : sqlite3.Connection) -> List[Tuple[int, str, int]]:
     except sqlite3.Error as e:
         print(f"Error al obtener productos: {e}")
         return []
+    
+def obtener_producto_nombre_por_id(conn : sqlite3.Connection, id : int) -> List[Tuple[str]]:
+    """Obtiene el nombre de un cliente de la base de datos por su ID."""
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre FROM productos WHERE id = ?", (id,))
+        return cursor.fetchall()
+    except sqlite3.Error as e:
+        print(f"Error al obtener distritos: {e}")
+        return []
 
 def actualizar_producto(conn : sqlite3.Connection, id: int, nombre: str, precio: int) -> bool:
     """Actualiza un producto existente en la base de datos."""
@@ -136,6 +146,16 @@ def obtener_clientes(conn : sqlite3.Connection) -> List[Tuple[int, str, str]]:
         return cursor.fetchall()
     except sqlite3.Error as e:
         print(f"Error al obtener clientes: {e}")
+        return []
+
+def obtener_cliente_dni_por_id(conn : sqlite3.Connection, id : int) -> List[Tuple[str]]:
+    """Obtiene el DNI de un cliente de la base de datos por su ID."""
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT dni FROM clientes WHERE id = ?", (id,))
+        return cursor.fetchall()
+    except sqlite3.Error as e:
+        print(f"Error al obtener distritos: {e}")
         return []
 
 def actualizar_cliente(conn : sqlite3.Connection, id: int, dni: str, nombre: str) -> bool:
@@ -183,6 +203,16 @@ def obtener_distritos(conn : sqlite3.Connection) -> List[Tuple[int, str]]:
         print(f"Error al obtener distritos: {e}")
         return []
 
+def obtener_distrito_nombre_por_id(conn : sqlite3.Connection, id : int) -> List[Tuple[str]]:
+    """Obtiene el nombre de un distrito de la base de datos por su ID."""
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre FROM distritos WHERE id = ?", (id,))
+        return cursor.fetchall()
+    except sqlite3.Error as e:
+        print(f"Error al obtener distritos: {e}")
+        return []
+
 def actualizar_distritos(conn : sqlite3.Connection, id: int, nombre: str) -> bool:
     """Actualiza un distrito existente en la base de datos."""
     try:
@@ -211,7 +241,8 @@ def agregar_ruta(conn : sqlite3.Connection, origen_id : int, destino_id : int, d
     """Agrega una nueva ruta entre distritos a la base de datos."""
     try:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO rutas (origen_id, destino_id, distancia) VALUES (?,?,?)", (origen_id, destino_id, distancia))
+        datos = [(origen_id, destino_id, distancia), (destino_id, origen_id, distancia)]
+        cursor.executemany("INSERT INTO rutas (origen_id, destino_id, distancia) VALUES (?,?,?)", datos)
         conn.commit()
         return True
     except sqlite3.Error as e:

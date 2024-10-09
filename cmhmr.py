@@ -163,34 +163,42 @@ class SistemaVentas:
             nom_distrito = bbdd.obtener_distrito_nombre_por_id(self.conn, id_distrito)
             self.ordenes.encolar(Orden(nom_producto, dni_cliente, nom_distrito, id_orden))
 
-    def agregar_producto(self, nombre, precio):
+    def agregar_producto(self, nombre, precio) -> bool:
         if nombre not in self.productos:
             id_producto = bbdd.agregar_producto(self.conn, nombre, precio)
-            if not id_producto: return
+            if not id_producto: return False
             producto = Producto(nombre, precio, id_producto)
             self.productos[nombre] = producto
+            return True
+        else: return False
 
-    def agregar_cliente(self, dni, nombre):
+    def agregar_cliente(self, dni, nombre) -> bool:
         if dni not in self.clientes:
             id_cliente = bbdd.agregar_cliente(self.conn, dni, nombre)
-            if not id_cliente: return
+            if not id_cliente: return False
             cliente = Cliente(dni, nombre, id_cliente)
             self.clientes[dni] = cliente
+            return True
+        else: return False
 
-    def agregar_distrito(self, nombre):
-        if self.grafo_distritos.get(nombre): return
+    def agregar_distrito(self, nombre) -> bool:
+        if self.grafo_distritos.get(nombre): return False
         id_distrito = bbdd.agregar_distrito(self.conn, nombre)
-        if not id_distrito: return
+        if not id_distrito: return False
         self.grafo_distritos.agregar_distrito(nombre, id_distrito)
+        return True
             
-    def agregar_ruta(self, origen, destino, distancia):
+    def agregar_ruta(self, origen, destino, distancia) -> bool:
         id_origen = self.grafo_distritos.get(origen).id
         id_destino = self.grafo_distritos.get(destino).id
-        if (not id_origen) or (not id_destino): return
+        if (not id_origen) or (not id_destino): return False
         if bbdd.agregar_ruta(self.conn, id_origen, id_destino, distancia):
-            self.grafo_distritos.agregar_camino(origen, destino, distancia)
+            if self.grafo_distritos.agregar_camino(origen, destino, distancia):
+                return True
+            else: return False
+        else: return False
 
-    def realizar_orden(self, dni_cliente, nombre_producto, nombre_distrito):
+    def realizar_orden(self, dni_cliente, nombre_producto, nombre_distrito) -> bool:
         cliente = self.clientes.get(dni_cliente)
         producto = self.productos.get(nombre_producto)
         distrito = self.grafo_distritos.get(nombre_distrito)
@@ -203,16 +211,17 @@ class SistemaVentas:
 
         if not producto:
             # print(f"Producto {nombre_producto} no disponible.")
-            return
+            return False
 
         if not distrito:
             # print(f"Distrito {nombre_distrito} no disponible.")
-            return
+            return False
 
         id_orden = bbdd.agregar_orden(self.conn, producto.id, cliente.id, distrito.id)
-        if not id_orden: return
+        if not id_orden: return False
         orden = Orden(producto, cliente, distrito, id_orden)
         self.ordenes.encolar(orden)
+        return True
         # print(f"Orden para {producto.nombre} de {cliente.nombre} en {distrito.nombre} ha sido creada.")
 
     def procesar_orden(self):

@@ -55,8 +55,10 @@ class GUI:
         nombre = simpledialog.askstring("Agregar Producto", "Ingrese el nombre del producto:")
         precio = simpledialog.askfloat("Agregar Producto", "Ingrese el precio del producto:")
         if nombre and precio is not None:
-            self.sistema.agregar_producto(nombre, precio)
-            messagebox.showinfo("Éxito", f"Producto '{nombre}' agregado con éxito.")
+            if self.sistema.agregar_producto(nombre, precio):
+                messagebox.showinfo("Éxito", f"Producto '{nombre}' agregado con éxito.")
+            else:
+                messagebox.showwarning("Advertencia", "Producto no pudo ser agregado.")
         else:
             messagebox.showwarning("Advertencia", "Datos incompletos.")
 
@@ -64,16 +66,20 @@ class GUI:
         dni = simpledialog.askstring("Agregar Cliente", "Ingrese el DNI del cliente:")
         nombre = simpledialog.askstring("Agregar Cliente", "Ingrese el nombre del cliente:")
         if dni and nombre:
-            self.sistema.agregar_cliente(dni, nombre)
-            messagebox.showinfo("Éxito", f"Cliente '{nombre}' agregado con éxito.")
+            if self.sistema.agregar_cliente(dni, nombre):
+                messagebox.showinfo("Éxito", f"Cliente '{nombre}' agregado con éxito.")
+            else:
+                messagebox.showwarning("Advertencia", "Cliente no pudo ser agregado.")
         else:
             messagebox.showwarning("Advertencia", "Datos incompletos.")
 
     def agregar_distrito(self):
         nombre = simpledialog.askstring("Agregar Distrito", "Ingrese el nombre del distrito:")
         if nombre:
-            self.sistema.agregar_distrito(nombre)
-            messagebox.showinfo("Éxito", f"Distrito '{nombre}' agregado con éxito.")
+            if self.sistema.agregar_distrito(nombre):
+                messagebox.showinfo("Éxito", f"Distrito '{nombre}' agregado con éxito.")
+            else:
+                messagebox.showwarning("Advertencia", "Distrito no pudo ser agregado.")
         else:
             messagebox.showwarning("Advertencia", "Nombre del distrito no ingresado.")
 
@@ -82,8 +88,10 @@ class GUI:
         nombre_producto = simpledialog.askstring("Realizar Orden", "Ingrese el nombre del producto:")
         nombre_distrito = simpledialog.askstring("Realizar Orden", "Ingrese el nombre del distrito:")
         if dni_cliente and nombre_producto and nombre_distrito:
-            self.sistema.realizar_orden(dni_cliente, nombre_producto, nombre_distrito)
-            messagebox.showinfo("Éxito", "Orden realizada con éxito.")
+            if self.sistema.realizar_orden(dni_cliente, nombre_producto, nombre_distrito):
+                messagebox.showinfo("Éxito", "Orden realizada con éxito.")
+            else:
+                messagebox.showwarning("Advertencia", "Orden no pudo ser agregada.")
         else:
             messagebox.showwarning("Advertencia", "Datos incompletos.")
 

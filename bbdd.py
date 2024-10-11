@@ -93,12 +93,12 @@ def obtener_productos(conn : sqlite3.Connection) -> List[Tuple[int, str, int]]:
         print(f"Error al obtener productos: {e}")
         return []
     
-def obtener_producto_nombre_por_id(conn : sqlite3.Connection, id : int) -> List[Tuple[str]]:
+def obtener_producto_nombre_por_id(conn : sqlite3.Connection, id : int) -> str:
     """Obtiene el nombre de un cliente de la base de datos por su ID."""
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT nombre FROM productos WHERE id = ?", (id,))
-        return cursor.fetchall()
+        return cursor.fetchall()[0][0]
     except sqlite3.Error as e:
         print(f"Error al obtener distritos: {e}")
         return []
@@ -148,12 +148,12 @@ def obtener_clientes(conn : sqlite3.Connection) -> List[Tuple[int, str, str]]:
         print(f"Error al obtener clientes: {e}")
         return []
 
-def obtener_cliente_dni_por_id(conn : sqlite3.Connection, id : int) -> List[Tuple[str]]:
+def obtener_cliente_dni_por_id(conn : sqlite3.Connection, id : int) -> str:
     """Obtiene el DNI de un cliente de la base de datos por su ID."""
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT dni FROM clientes WHERE id = ?", (id,))
-        return cursor.fetchall()
+        return cursor.fetchall()[0][0]
     except sqlite3.Error as e:
         print(f"Error al obtener distritos: {e}")
         return []
@@ -203,12 +203,12 @@ def obtener_distritos(conn : sqlite3.Connection) -> List[Tuple[int, str]]:
         print(f"Error al obtener distritos: {e}")
         return []
 
-def obtener_distrito_nombre_por_id(conn : sqlite3.Connection, id : int) -> List[Tuple[str]]:
+def obtener_distrito_nombre_por_id(conn : sqlite3.Connection, id : int) -> str:
     """Obtiene el nombre de un distrito de la base de datos por su ID."""
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT nombre FROM distritos WHERE id = ?", (id,))
-        return cursor.fetchall()
+        return cursor.fetchall()[0][0]
     except sqlite3.Error as e:
         print(f"Error al obtener distritos: {e}")
         return []

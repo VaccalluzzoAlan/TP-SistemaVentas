@@ -61,7 +61,7 @@ class Grafo:
 
     def dijkstra(self, inicio, destino : str = None, camino : bool = False):
         distancias = {v: float('inf') for v in self.vertices}
-        caminos = [[(inicio, v, self.vertices[v].conexiones[inicio])] for v in self.vertices if v != inicio]
+        caminos = [[(inicio, v, self.vertices[v].conexiones[inicio])] for v in self.vertices if (v != inicio) and (inicio in self.vertices[v].conexiones.keys())]
         distancias[inicio] = 0
         queue = [(0, inicio)]
         if camino:
@@ -81,15 +81,15 @@ class Grafo:
                 if distancia < distancias[vecino]:
                     if camino:
                         for c in caminos:
-                            # print(vertice_actual, vecino, distancia)
+                            print(vertice_actual, vecino, distancia)
                             if c[-1][1] == nodo_anterior and c[-1][1] != destino and c[-1][0] != vecino:
                                 c.append((nodo_anterior, vecino, self.vertices[nodo_anterior].conexiones[vecino] + c[-1][2]))
                     distancias[vecino] = distancia
                     heapq.heappush(queue, (distancia, vecino))
                     if camino:
                         nodo_anterior = vecino
-                        # print("CAMINOS:", caminos)
-                # print('2', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
+                        print("CAMINOS:", caminos)
+                print('2', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
 
         if camino:
             caminosDist = [(i, c[-1][2]) for i, c in enumerate(caminos)]
@@ -111,6 +111,12 @@ class ColaFIFO:
     def desencolar(self):
         if len(self.cola) > 0:
             return self.cola.popleft()
+        else:
+            return None
+        
+    def primero(self):
+        if len(self.cola) > 0:
+            return self.cola[0]
         else:
             return None
 
@@ -161,7 +167,11 @@ class SistemaVentas:
             nom_producto = bbdd.obtener_producto_nombre_por_id(self.conn, id_producto)
             dni_cliente = bbdd.obtener_cliente_dni_por_id(self.conn, id_cliente)
             nom_distrito = bbdd.obtener_distrito_nombre_por_id(self.conn, id_distrito)
-            self.ordenes.encolar(Orden(nom_producto, dni_cliente, nom_distrito, id_orden))
+
+            orden_producto = self.productos.get(nom_producto)
+            orden_cliente = self.clientes.get(dni_cliente)
+            orden_distrito = self.grafo_distritos.get(nom_distrito)
+            self.ordenes.encolar(Orden(orden_producto, orden_cliente, orden_distrito, id_orden))
 
     def agregar_producto(self, nombre, precio) -> bool:
         if nombre not in self.productos:
@@ -216,7 +226,10 @@ class SistemaVentas:
         if not distrito:
             # print(f"Distrito {nombre_distrito} no disponible.")
             return False
-
+        
+        if not self.ruta_mas_corta(nombre_distrito):
+            return False
+        
         id_orden = bbdd.agregar_orden(self.conn, producto.id, cliente.id, distrito.id)
         if not id_orden: return False
         orden = Orden(producto, cliente, distrito, id_orden)
@@ -228,6 +241,9 @@ class SistemaVentas:
         if self.ordenes.esta_vacia():
             return None
         else:
+            print(self.ordenes.primero())
+            # if not self.ruta_mas_corta(orden.distrito.nombre):
+            #     return None
             orden : Orden = self.ordenes.desencolar()
             if orden:
                 bbdd.eliminar_orden(self.conn, orden.id)
@@ -255,6 +271,8 @@ class SistemaVentas:
                 distancias[orden.distrito.nombre] = distancia
                 # print(f"Procesando orden de {orden.producto.nombre} para {orden.cliente.nombre}.")
                 # print(f"Ruta más corta a {orden.distrito.nombre} es de {distancia} km.")
+            else:
+                print("!!!")
             
         return ordenes, distancias
 
@@ -268,6 +286,7 @@ def test_sistema_ventas():
     sistema.agregar_distrito("Palermo")
     sistema.agregar_distrito("Belgrano")
     sistema.agregar_distrito("4")
+    sistema.agregar_distrito("5")
 
     sistema.agregar_ruta("Flores", "Palermo", 5)
     sistema.agregar_ruta("Flores", "Belgrano", 9)
@@ -284,12 +303,12 @@ def test_sistema_ventas():
     sistema.agregar_cliente("12345678", "Juan Perez")
 
     # Realizar y procesar órdenes
-    sistema.realizar_orden("12345678", "Laptop", "Palermo")
-    # print(sistema.procesar_ordenes())
+    sistema.realizar_orden("12345678", "Laptop", "5")
+    print(sistema.procesar_ordenes())
 
     return sistema
 
 if __name__ == "__main__":
-    # test_sistema_ventas()
-    sistema = SistemaVentas()
-    print(sistema.clientes)
+    test_sistema_ventas()
+    # sistema = SistemaVentas()
+    # print(sistema.clientes)

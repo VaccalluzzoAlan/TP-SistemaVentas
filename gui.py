@@ -53,47 +53,50 @@ class GUI:
 
     def agregar_producto(self):
         nombre = simpledialog.askstring("Agregar Producto", "Ingrese el nombre del producto:")
-        precio = simpledialog.askfloat("Agregar Producto", "Ingrese el precio del producto:")
-        if nombre and precio is not None:
-            if self.sistema.agregar_producto(nombre, precio):
-                messagebox.showinfo("Éxito", f"Producto '{nombre}' agregado con éxito.")
-            else:
-                messagebox.showwarning("Advertencia", "Producto no pudo ser agregado.")
+        if nombre == None: return
+        precio = simpledialog.askinteger("Agregar Producto", "Ingrese el precio del producto:")
+        if precio == None: return
+
+        if self.sistema.agregar_producto(nombre, precio):
+            messagebox.showinfo("Éxito", f"Producto '{nombre}' agregado con éxito.")
         else:
-            messagebox.showwarning("Advertencia", "Datos incompletos.")
+            messagebox.showwarning("Advertencia", "Producto no pudo ser agregado.")
 
     def agregar_cliente(self):
         dni = simpledialog.askstring("Agregar Cliente", "Ingrese el DNI del cliente:")
+        if dni == None: return
         nombre = simpledialog.askstring("Agregar Cliente", "Ingrese el nombre del cliente:")
-        if dni and nombre:
-            if self.sistema.agregar_cliente(dni, nombre):
-                messagebox.showinfo("Éxito", f"Cliente '{nombre}' agregado con éxito.")
-            else:
-                messagebox.showwarning("Advertencia", "Cliente no pudo ser agregado.")
+        if nombre == None: return
+
+        if self.sistema.agregar_cliente(dni, nombre):
+            messagebox.showinfo("Éxito", f"Cliente '{nombre}' agregado con éxito.")
         else:
-            messagebox.showwarning("Advertencia", "Datos incompletos.")
+            messagebox.showwarning("Advertencia", "Cliente no pudo ser agregado.")
 
     def agregar_distrito(self):
         nombre = simpledialog.askstring("Agregar Distrito", "Ingrese el nombre del distrito:")
-        if nombre:
-            if self.sistema.agregar_distrito(nombre):
-                messagebox.showinfo("Éxito", f"Distrito '{nombre}' agregado con éxito.")
-            else:
-                messagebox.showwarning("Advertencia", "Distrito no pudo ser agregado.")
+        if nombre == None: return
+
+        if self.sistema.agregar_distrito(nombre):
+            messagebox.showinfo("Éxito", f"Distrito '{nombre}' agregado con éxito.")
         else:
-            messagebox.showwarning("Advertencia", "Nombre del distrito no ingresado.")
+            messagebox.showwarning("Advertencia", "Distrito no pudo ser agregado.")
 
     def realizar_orden(self):
         dni_cliente = simpledialog.askstring("Realizar Orden", "Ingrese el DNI del cliente:")
+        if dni_cliente == None: return
         nombre_producto = simpledialog.askstring("Realizar Orden", "Ingrese el nombre del producto:")
+        if nombre_producto == None: return
         nombre_distrito = simpledialog.askstring("Realizar Orden", "Ingrese el nombre del distrito:")
-        if dni_cliente and nombre_producto and nombre_distrito:
-            if self.sistema.realizar_orden(dni_cliente, nombre_producto, nombre_distrito):
-                messagebox.showinfo("Éxito", "Orden realizada con éxito.")
-            else:
-                messagebox.showwarning("Advertencia", "Orden no pudo ser agregada.")
+        if nombre_distrito == None: return
+
+        if not self.sistema.ruta_mas_corta(nombre_distrito):
+            messagebox.showwarning("Advertencia", "No existe ruta hacia este distrito.")
+            return
+        if self.sistema.realizar_orden(dni_cliente, nombre_producto, nombre_distrito):
+            messagebox.showinfo("Éxito", "Orden realizada con éxito.")
         else:
-            messagebox.showwarning("Advertencia", "Datos incompletos.")
+            messagebox.showwarning("Advertencia", "Orden no pudo ser agregada.")
 
     def procesar_siguiente_orden(self):
         orden_procesada = self.sistema.procesar_orden()

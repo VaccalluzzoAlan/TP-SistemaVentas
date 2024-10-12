@@ -89,7 +89,7 @@ class Grafo:
                     if camino:
                         nodo_anterior = vecino
                         print("CAMINOS:", caminos)
-                print('2', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
+                # print('2', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
 
         if camino:
             caminosDist = [(i, c[-1][2]) for i, c in enumerate(caminos)]
@@ -157,8 +157,8 @@ class SistemaVentas:
         rutas_bbdd = bbdd.obtener_rutas(self.conn)
         for ruta in rutas_bbdd:
             id_origen, id_destino, distancia = ruta
-            nom_origen = bbdd.obtener_distrito_nombre_por_id(self.conn, id_origen)[0][0]
-            nom_destino = bbdd.obtener_distrito_nombre_por_id(self.conn, id_destino)[0][0]
+            nom_origen = bbdd.obtener_distrito_nombre_por_id(self.conn, id_origen)
+            nom_destino = bbdd.obtener_distrito_nombre_por_id(self.conn, id_destino)
             self.grafo_distritos.agregar_camino(nom_origen, nom_destino, distancia)
 
         ordenes_bbdd = bbdd.obtener_ordenes(self.conn)

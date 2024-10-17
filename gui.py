@@ -62,9 +62,11 @@ class GUI:
         else:
             messagebox.showwarning("Advertencia", "Producto no pudo ser agregado.")
 
-    def agregar_cliente(self):
-        dni = simpledialog.askstring("Agregar Cliente", "Ingrese el DNI del cliente:")
-        if dni == None: return
+    def agregar_cliente(self, dni_input : str = None):
+        if dni_input: dni = dni_input
+        else:
+            dni = simpledialog.askstring("Agregar Cliente", "Ingrese el DNI del cliente:")
+            if dni == None: return
         nombre = simpledialog.askstring("Agregar Cliente", "Ingrese el nombre del cliente:")
         if nombre == None: return
 
@@ -83,19 +85,34 @@ class GUI:
             messagebox.showwarning("Advertencia", "Distrito no pudo ser agregado.")
 
     def realizar_orden(self):
+        lista_dni = [c.dni for c in self.sistema.clientes.values()]
+        lista_prod = [p.nombre for p in self.sistema.productos.values()]
+        lista_distr = [d.nombre for d in self.sistema.grafo_distritos.vertices.values()]
+
         dni_cliente = simpledialog.askstring("Realizar Orden", "Ingrese el DNI del cliente:")
         if dni_cliente == None: return
+        elif dni_cliente not in lista_dni:
+            if messagebox.askyesno("Advertencia", "No se pudo encontrar ese cliente. ¿Crear uno con este DNI?"):
+                self.agregar_cliente(dni_cliente)
+            else:
+                return
         nombre_producto = simpledialog.askstring("Realizar Orden", "Ingrese el nombre del producto:")
         if nombre_producto == None: return
+        elif nombre_producto not in lista_prod:
+            messagebox.showwarning("Advertencia", "No se pudo encontrar ese producto.")
+            return
         nombre_distrito = simpledialog.askstring("Realizar Orden", "Ingrese el nombre del distrito:")
         if nombre_distrito == None: return
+        elif nombre_distrito not in lista_distr:
+            messagebox.showwarning("Advertencia", "No se pudo encontrar ese distrito.")
+            return
 
         if not self.sistema.ruta_mas_corta(nombre_distrito):
             messagebox.showwarning("Advertencia", "No existe ruta hacia este distrito.")
             return
         if self.sistema.realizar_orden(dni_cliente, nombre_producto, nombre_distrito):
             messagebox.showinfo("Éxito", "Orden realizada con éxito.")
-            self.mostrar_grafo(nombre_distrito)
+            self.mostrar_grafo(nombre_distrito, self.sistema.local)
         else:
             messagebox.showwarning("Advertencia", "Orden no pudo ser agregada.")
 
@@ -111,8 +128,29 @@ class GUI:
             messagebox.showinfo("Sin Órdenes", "No hay órdenes para procesar.")
 
     def mostrar_grafo(self, destino : str = None, inicio : str = "Flores"):
-        G = nx.Graph()
         distritos = [distr.nombre for distr in self.sistema.grafo_distritos.vertices.values()]
+
+        if not (destino and inicio):
+            if messagebox.askyesno("Mostrar Grafo", "¿Mostrar ruta especifica?"):
+                if not inicio:
+                    inicio = simpledialog.askstring("Mostrar Grafo", f"Ingrese el nombre del distrito donde comienza la ruta (el local es {self.sistema.local}):")
+                    if inicio == None: return
+                    elif inicio not in distritos:
+                        messagebox.showwarning("Advertencia", "No se pudo encontrar ese distrito.")
+                        return
+                if not destino:
+                    destino = simpledialog.askstring("Mostrar Grafo", "Ingrese el nombre del distrito donde termina la ruta:")
+                    if destino == None: return
+                    elif destino not in distritos:
+                        messagebox.showwarning("Advertencia", "No se pudo encontrar ese distrito.")
+                        return
+
+        if inicio and destino:
+            if inicio == destino:
+                messagebox.showwarning("Advertencia", "Una ruta no puede comenzar y terminar en el mismo distrito.")
+                return
+
+        G = nx.Graph()
         G.add_nodes_from(distritos)
 
         aristas = []
@@ -127,7 +165,10 @@ class GUI:
         G.add_weighted_edges_from(aristas)
 
         if destino and inicio:    # Si se especifico un inicio y destino, se enfatiza la ruta y el resto se ve menos.
-            aristas_camino = self.sistema.ruta_mas_corta(destino='Palermo', solo_camino=True)
+            aristas_camino = self.sistema.ruta_mas_corta(destino=destino, inicio=inicio, solo_camino=True)
+            if not aristas_camino: 
+                messagebox.showwarning("Advertencia", "No existe ruta entre los dos distritos.")
+                return
             nodos_camino = {nodo for arista in aristas_camino for nodo in arista}    # Todo nodo en la ruta tomada
             nodos_otros = {distr for distr in distritos if distr not in nodos_camino}    # Todo nodo fuera de la ruta
 
@@ -139,9 +180,9 @@ class GUI:
             nx.draw_networkx_labels(G, pos, labels={n:n for n in nodos_otros}, font_size=10) # Nombre de nodos fuera del camino
             nx.draw_networkx_labels(G, pos, labels={n:n for n in nodos_camino}, font_weight='bold') # Nombre de nodos en el camino
 
-            nx.draw_networkx_nodes(G, pos, nodelist=nodos_camino, node_size=450, node_color='orange') # Nodos en el camino
-            nx.draw_networkx_nodes(G, pos, nodelist=[self.sistema.local], node_size=600, node_color='red') # Nodo origen
-            nx.draw_networkx_nodes(G, pos, nodelist=['Palermo'], node_size=600, node_color='green') # Nodo destino
+            nx.draw_networkx_nodes(G, pos, nodelist=nodos_camino, node_size=525, node_color='orange') # Nodos en el camino
+            nx.draw_networkx_nodes(G, pos, nodelist=[inicio], node_size=750, node_color='red') # Nodo origen
+            nx.draw_networkx_nodes(G, pos, nodelist=[destino], node_size=750, node_color='green') # Nodo destino
 
             nx.draw_networkx_edges(G, pos, edgelist=aristas_camino, width=3, edge_color='blue') # Rutas tomadas
 

@@ -81,21 +81,21 @@ class Grafo:
                 if distancia < distancias[vecino]:
                     if camino:
                         for c in caminos:
-                            print(vertice_actual, vecino, distancia)
+                            # print(vertice_actual, vecino, distancia)
                             if c[-1][1] == nodo_anterior and c[-1][1] != destino and c[-1][0] != vecino:
                                 c.append((nodo_anterior, vecino, self.vertices[nodo_anterior].conexiones[vecino] + c[-1][2]))
                     distancias[vecino] = distancia
                     heapq.heappush(queue, (distancia, vecino))
                     if camino:
                         nodo_anterior = vecino
-                        print("CAMINOS:", caminos)
+                        # print("CAMINOS:", caminos)
                 # print('2', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
 
         if camino:
             caminosDist = [(i, c[-1][2]) for i, c in enumerate(caminos)]
             caminoMinimoIndex = min(caminosDist, key=lambda x: x[1])[0]
             caminoMinimo = [(arista[0], arista[1]) for arista in caminos[caminoMinimoIndex]]
-            return caminoMinimo
+            return caminoMinimo if distancias[destino] != float('inf') else None
         if destino:
             return distancias[destino] if distancias[destino] != float('inf') else None
         else:

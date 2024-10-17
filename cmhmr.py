@@ -199,6 +199,8 @@ class SistemaVentas:
         return True
             
     def agregar_ruta(self, origen, destino, distancia) -> bool:
+        if self.grafo_distritos.get(origen).conexiones[destino]: return False
+        if self.grafo_distritos.get(destino).conexiones[origen]: return False
         id_origen = self.grafo_distritos.get(origen).id
         id_destino = self.grafo_distritos.get(destino).id
         if (not id_origen) or (not id_destino): return False
@@ -241,7 +243,7 @@ class SistemaVentas:
         if self.ordenes.esta_vacia():
             return None
         else:
-            print(self.ordenes.primero())
+            # print(self.ordenes.primero())
             # if not self.ruta_mas_corta(orden.distrito.nombre):
             #     return None
             orden : Orden = self.ordenes.desencolar()

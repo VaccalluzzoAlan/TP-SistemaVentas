@@ -240,9 +240,14 @@ def eliminar_distrito(conn : sqlite3.Connection, id: int) -> bool:
 def agregar_ruta(conn : sqlite3.Connection, origen_id : int, destino_id : int, distancia : float) -> bool:
     """Agrega una nueva ruta entre distritos a la base de datos."""
     try:
+        if origen_id > destino_id:
+            origen_id, destino_id = destino_id, origen_id
         cursor = conn.cursor()
-        datos = [(origen_id, destino_id, distancia), (destino_id, origen_id, distancia)]
-        cursor.executemany("INSERT INTO rutas (origen_id, destino_id, distancia) VALUES (?,?,?)", datos)
+        cursor.execute("SELECT * FROM rutas WHERE origen_id = ? AND destino_id = ?", (destino_id, origen_id))
+        if cursor.fetchall():
+            print(f"Ya existe ruta con estos distritos.")
+            return False
+        cursor.execute("INSERT INTO rutas (origen_id, destino_id, distancia) VALUES (?,?,?)", (origen_id, destino_id, distancia))
         conn.commit()
         return True
     except sqlite3.Error as e:
@@ -263,8 +268,7 @@ def actualizar_rutas(conn : sqlite3.Connection, origen_id : int, destino_id : in
     """Actualiza una ruta existente en la base de datos."""
     try:
         cursor = conn.cursor()
-        datos = [(distancia, origen_id, destino_id), (distancia, destino_id, origen_id)]
-        cursor.executemany("UPDATE rutas SET distancia = ? WHERE origen_id = ? AND destino_id = ?", datos)
+        cursor.execute("UPDATE rutas SET distancia = ? WHERE (origen_id = ? AND destino_id = ?) OR (destino_id = ? AND origen_id = ?)", (distancia, origen_id, destino_id, destino_id, origen_id))
         conn.commit()
         return True
     except sqlite3.Error as e:
@@ -275,8 +279,7 @@ def eliminar_ruta(conn : sqlite3.Connection, origen_id: int, destino_id: int) ->
     """Elimina una ruta de la base de datos."""
     try:
         cursor = conn.cursor()
-        datos = [(origen_id, destino_id), (destino_id, origen_id)]
-        cursor.executemany("DELETE FROM rutas WHERE origen_id = ? AND destino_id = ?", datos)
+        cursor.execute("DELETE FROM rutas WHERE (origen_id = ? AND destino_id = ?) OR (destino_id = ? AND origen_id = ?)", (origen_id, destino_id, destino_id, origen_id))
         conn.commit()
         return True
     except sqlite3.Error as e:

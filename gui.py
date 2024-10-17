@@ -127,7 +127,7 @@ class GUI:
         else:
             messagebox.showinfo("Sin Órdenes", "No hay órdenes para procesar.")
 
-    def mostrar_grafo(self, destino : str = None, inicio : str = "Flores"):
+    def mostrar_grafo(self, destino : str = None, inicio : str = None):
         distritos = [distr.nombre for distr in self.sistema.grafo_distritos.vertices.values()]
 
         if not (destino and inicio):
@@ -163,6 +163,8 @@ class GUI:
                     aristas.append(arista)
 
         G.add_weighted_edges_from(aristas)
+        plt.figure(figsize=(10, 6))
+        pos = nx.spring_layout(G)
 
         if destino and inicio:    # Si se especifico un inicio y destino, se enfatiza la ruta y el resto se ve menos.
             aristas_camino = self.sistema.ruta_mas_corta(destino=destino, inicio=inicio, solo_camino=True)
@@ -173,16 +175,14 @@ class GUI:
             nodos_otros = {distr for distr in distritos if distr not in nodos_camino}    # Todo nodo fuera de la ruta
 
             # Mostrar el grafo
-            plt.figure(figsize=(10, 6))
-            pos = nx.spring_layout(G)
             nx.draw_networkx(G, pos, with_labels=False, node_color='grey', edge_color='grey', style='dashed') # Grafo general
 
             nx.draw_networkx_labels(G, pos, labels={n:n for n in nodos_otros}, font_size=10) # Nombre de nodos fuera del camino
             nx.draw_networkx_labels(G, pos, labels={n:n for n in nodos_camino}, font_weight='bold') # Nombre de nodos en el camino
 
-            nx.draw_networkx_nodes(G, pos, nodelist=nodos_camino, node_size=525, node_color='orange') # Nodos en el camino
-            nx.draw_networkx_nodes(G, pos, nodelist=[inicio], node_size=750, node_color='red') # Nodo origen
-            nx.draw_networkx_nodes(G, pos, nodelist=[destino], node_size=750, node_color='green') # Nodo destino
+            nx.draw_networkx_nodes(G, pos, nodelist=nodos_camino, node_size=750, node_color='orange') # Nodos en el camino
+            nx.draw_networkx_nodes(G, pos, nodelist=[inicio], node_size=1200, node_color='red') # Nodo origen
+            nx.draw_networkx_nodes(G, pos, nodelist=[destino], node_size=1200, node_color='green') # Nodo destino
 
             nx.draw_networkx_edges(G, pos, edgelist=aristas_camino, width=3, edge_color='blue') # Rutas tomadas
 
@@ -193,8 +193,6 @@ class GUI:
             nx.draw_networkx_edge_labels(G, pos, edge_labels_camino, font_weight='bold') # Distancias entre nodos en el camino
         else:
             # Mostrar el grafo
-            plt.figure(figsize=(10, 6))
-            pos = nx.spring_layout(G)
             nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=12, font_color='black')
             edge_labels = nx.get_edge_attributes(G, 'weight')
             nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)

@@ -163,8 +163,8 @@ class GUI:
                     aristas.append(arista)
 
         G.add_weighted_edges_from(aristas)
-        plt.figure(figsize=(10, 6))
         pos = nx.spring_layout(G)
+        plt.figure(figsize=(10, 6))
 
         if destino and inicio:    # Si se especifico un inicio y destino, se enfatiza la ruta y el resto se ve menos.
             aristas_camino = self.sistema.ruta_mas_corta(destino=destino, inicio=inicio, solo_camino=True)
@@ -193,7 +193,7 @@ class GUI:
             nx.draw_networkx_edge_labels(G, pos, edge_labels_camino, font_weight='bold') # Distancias entre nodos en el camino
         else:
             # Mostrar el grafo
-            nx.draw(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=12, font_color='black')
+            nx.draw_networkx(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=12, font_color='black')
             edge_labels = nx.get_edge_attributes(G, 'weight')
             nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
         plt.title("Grafo de Distritos y Conexiones")

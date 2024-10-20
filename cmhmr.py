@@ -199,8 +199,9 @@ class SistemaVentas:
         return True
             
     def agregar_ruta(self, origen, destino, distancia) -> bool:
-        if self.grafo_distritos.get(origen).conexiones[destino]: return False
-        if self.grafo_distritos.get(destino).conexiones[origen]: return False
+        if destino in self.grafo_distritos.get(origen).conexiones: return False
+        if origen in self.grafo_distritos.get(destino).conexiones: return False
+        distancia = max(distancia, 0.001)
         id_origen = self.grafo_distritos.get(origen).id
         id_destino = self.grafo_distritos.get(destino).id
         if (not id_origen) or (not id_destino): return False
@@ -273,8 +274,6 @@ class SistemaVentas:
                 distancias[orden.distrito.nombre] = distancia
                 # print(f"Procesando orden de {orden.producto.nombre} para {orden.cliente.nombre}.")
                 # print(f"Ruta más corta a {orden.distrito.nombre} es de {distancia} km.")
-            else:
-                print("!!!")
             
         return ordenes, distancias
 

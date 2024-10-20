@@ -35,6 +35,9 @@ class GUI:
         self.boton_agregar_distrito = tk.Button(self.frame_izq, text="Agregar Distrito", command=self.agregar_distrito, bg="#3F407D", fg="white",font=("Arial", 12))
         self.boton_agregar_distrito.pack(pady=10, padx=10, fill="x")
 
+        self.boton_agregar_ruta = tk.Button(self.frame_izq, text="Agregar Ruta", command=self.agregar_ruta, bg="#3F407D", fg="white",font=("Arial", 12))
+        self.boton_agregar_ruta.pack(pady=10, padx=10, fill="x")
+
         self.boton_realizar_orden = tk.Button(self.frame_izq, text="Realizar Orden", command=self.realizar_orden, bg="#3F407D", fg="white",font=("Arial", 12))
         self.boton_realizar_orden.pack(pady=10, padx=10, fill="x")
 
@@ -83,6 +86,27 @@ class GUI:
             messagebox.showinfo("Éxito", f"Distrito '{nombre}' agregado con éxito.")
         else:
             messagebox.showwarning("Advertencia", "Distrito no pudo ser agregado.")
+
+    def agregar_ruta(self):
+        distritos = [d.nombre for d in self.sistema.grafo_distritos.vertices.values()]
+
+        origen = simpledialog.askstring("Agregar Ruta", "Ingrese el nombre de un distrito:")
+        if origen == None: return
+        elif origen not in distritos:
+            messagebox.showwarning("Advertencia", "No se pudo encontrar ese distrito.")
+            return
+        destino = simpledialog.askstring("Agregar Ruta", "Ingrese el nombre de otro distrito:")
+        if destino == None: return
+        elif destino not in distritos:
+            messagebox.showwarning("Advertencia", "No se pudo encontrar ese distrito.")
+            return
+        distancia = simpledialog.askfloat("Agregar Ruta", "Ingrese la distancia entre los distritos:", minvalue=0.001)
+        if distancia == None: return
+
+        if self.sistema.agregar_ruta(origen, destino, distancia):
+            messagebox.showinfo("Éxito", f"Ruta entre '{origen}' y '{destino}' agregado con éxito.")
+        else:
+            messagebox.showwarning("Advertencia", "Ruta no pudo ser agregada.")
 
     def realizar_orden(self):
         lista_dni = [c.dni for c in self.sistema.clientes.values()]

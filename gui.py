@@ -191,12 +191,23 @@ class GUI:
         plt.figure(figsize=(10, 6))
 
         if destino and inicio:    # Si se especifico un inicio y destino, se enfatiza la ruta y el resto se ve menos.
-            aristas_camino = self.sistema.ruta_mas_corta(destino=destino, inicio=inicio, solo_camino=True)
+            nodos_camino = self.sistema.ruta_mas_corta(destino=destino, inicio=inicio, solo_camino=True)
+            aristas_camino = []
+            aristas_buscar = [(a[0], a[1]) for a in aristas]
+            for index, nodo in enumerate(nodos_camino):
+                if index + 1 < len(nodos_camino):
+                    nodo_siguiente = nodos_camino[index + 1]
+                    arista_camino = (nodo, nodo_siguiente)
+                    if arista_camino not in aristas_buscar: arista_camino = (nodo_siguiente, nodo)
+                    aristas_camino.append(arista_camino)
+                    
+            # print(aristas_camino)
             if not aristas_camino: 
                 messagebox.showwarning("Advertencia", "No existe ruta entre los dos distritos.")
                 return
-            nodos_camino = {nodo for arista in aristas_camino for nodo in arista}    # Todo nodo en la ruta tomada
-            nodos_otros = {distr for distr in distritos if distr not in nodos_camino}    # Todo nodo fuera de la ruta
+            # nodos_camino = {nodo for arista in aristas_camino for nodo in arista}    # Todo nodo en la ruta tomada
+            nodos_otros = [distr for distr in distritos if distr not in nodos_camino]    # Todo nodo fuera de la ruta
+            # print({n:n for n in nodos_camino}, {n:n for n in nodos_otros})
 
             # Mostrar el grafo
             nx.draw_networkx(G, pos, with_labels=False, node_color='grey', edge_color='grey', style='dashed') # Grafo general

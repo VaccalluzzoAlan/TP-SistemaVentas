@@ -2,19 +2,21 @@ import customtkinter as ctk
 import cmhmr  # Asegúrate de que tu módulo está en el mismo directorio o en PYTHONPATH
 import networkx as nx
 import matplotlib.pyplot as plt
+from tkinter import messagebox
+
 
 class GUI(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         # Configuración de la apariencia
-        ctk.set_appearance_mode("dark")  # Modo oscuro
-        ctk.set_default_color_theme("blue")  # Tema azul
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("blue")
 
         self.title("Sistema de Ventas")
         self.geometry("960x560")
 
-        self.sistema = cmhmr.SistemaVentas()
+        self.sistema = cmhmr.SistemaVentas()  # Instancia de tu sistema de ventas
 
         # Frame izquierdo (logo y botones)
         self.frame_izq = ctk.CTkFrame(self)
@@ -50,77 +52,194 @@ class GUI(ctk.CTk):
         self.boton_salir = ctk.CTkButton(self.frame_izq, text="Salir", command=self.quit)
         self.boton_salir.pack(pady=10, padx=10, fill="x")
 
-        # Área para mostrar información
-        self.texto_info = ctk.CTkTextbox(self, width=400, height=560)
-        self.texto_info.pack(side="right", fill="both", expand=True)
+        # Frame derecho dinámico para mostrar diferentes interfaces
+        self.frame_derecho = ctk.CTkFrame(self, width=400, height=560)
+        self.frame_derecho.pack(side="right", fill="both", expand=True)
 
-    # Métodos de comando
+    def limpiar_frame_derecho(self):
+        for widget in self.frame_derecho.winfo_children():
+            widget.destroy()
+
+   
+    
     def agregar_producto(self):
-        nombre = ctk.CTkInputDialog(text="Agregar Producto", title="Ingrese el nombre del producto:")
-        precio = ctk.CTkInputDialog(text="Agregar Producto", title="Ingrese el precio del producto:")
-        if nombre and precio:
-            try:
-                precio = int(precio)
-                if self.sistema.agregar_producto(nombre, precio):
-                    ctk.CTkMessageBox.show_info("Éxito", f"Producto '{nombre}' agregado con éxito.")
-                else:
-                    ctk.CTkMessageBox.show_warning("Advertencia", "Producto no pudo ser agregado.")
-            except ValueError:
-                ctk.CTkMessageBox.show_warning("Advertencia", "Por favor, ingrese un precio válido.")
+        self.limpiar_frame_derecho()
+        ctk.CTkLabel(self.frame_derecho, text="Agregar Producto", font=("Arial", 16)).pack(pady=10)
+        # Campos de entrada para nombre y precio
+        nombre_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Nombre del producto")
+        nombre_entry.pack(pady=5)
+        precio_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Precio del producto")
+        precio_entry.pack(pady=5)
+        # Botón de guardar con lógica de validación directamente dentro del comando
+        ctk.CTkButton(
+            self.frame_derecho, 
+            text="Guardar", 
+            command=lambda: (
+                # Obtención de los valores de entrada
+                (nombre := nombre_entry.get()),
+                (precio := precio_entry.get()),
+                # Validación de que los campos no estén vacíos
+                (ctk.CTkMessageBox.show_warning("Advertencia", "Complete todos los campos.") if not nombre or not precio else None),
+                # Conversión de precio y validación adicional
+                (
+                    None if not nombre or not precio else
+                    (ctk.CTkMessageBox.show_warning("Advertencia", "Por favor, ingrese un precio válido.") if not precio.isdigit() else 
+                    # Si el precio es válido, intenta agregar el producto al sistema
+                    (self.sistema.agregar_producto(nombre, int(precio)) and ctk.CTkMessageBox.show_info("Éxito", f"Producto '{nombre}' agregado con éxito.")) or
+                    ctk.CTkMessageBox.show_warning("Advertencia", "El producto no pudo ser agregado.")
+                ))
+            )
+        ).pack(pady=10)
+
 
     def agregar_cliente(self):
-        dni = ctk.CTkInputDialog(text="Agregar Cliente", title="Ingrese el DNI del cliente:")
-        nombre = ctk.CTkInputDialog(text="Agregar Cliente", title="Ingrese el nombre del cliente:")
-        if dni and nombre:
-            if self.sistema.agregar_cliente(dni, nombre):
-                ctk.CTkMessageBox.show_info("Éxito", f"Cliente '{nombre}' agregado con éxito.")
-            else:
-                ctk.CTkMessageBox.show_warning("Advertencia", "Cliente no pudo ser agregado.")
+        self.limpiar_frame_derecho()
+        ctk.CTkLabel(self.frame_derecho, text="Agregar Cliente", font=("Arial", 16)).pack(pady=10)
+
+        # Campos de entrada para DNI y nombre
+        dni_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="DNI del cliente")
+        dni_entry.pack(pady=5)
+        nombre_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Nombre del cliente")
+        nombre_entry.pack(pady=5)
+
+        # Lógica para el botón Guardar
+        ctk.CTkButton(
+            self.frame_derecho, 
+            text="Guardar", 
+            command=lambda: (
+                # Obtención de los valores de entrada
+                (dni := dni_entry.get()),
+                (nombre := nombre_entry.get()),
+                # Verificación de que ambos campos no estén vacíos
+                (ctk.CTkLabel(self.frame_derecho, text="Complete todos los campos.", font=("Arial", 12)).pack() if not dni or not nombre else 
+                # Intento de agregar el cliente
+                (ctk.CTkLabel(self.frame_derecho, text=f"Cliente '{nombre}' agregado con éxito.", font=("Arial", 12)).pack() if self.sistema.agregar_cliente(dni, nombre) else 
+                ctk.CTkLabel(self.frame_derecho, text="Cliente no pudo ser agregado.", font=("Arial", 12)).pack())
+                )
+            )
+        ).pack(pady=10)
+
+
 
     def agregar_distrito(self):
-        nombre = ctk.CTkInputDialog(text="Agregar Distrito", title="Ingrese el nombre del distrito:")
-        if nombre:
-            if self.sistema.agregar_distrito(nombre):
-                ctk.CTkMessageBox.show_info("Éxito", f"Distrito '{nombre}' agregado con éxito.")
-            else:
-                ctk.CTkMessageBox.show_warning("Advertencia", "Distrito no pudo ser agregado.")
+        self.limpiar_frame_derecho()
+        ctk.CTkLabel(self.frame_derecho, text="Agregar Distrito", font=("Arial", 16)).pack(pady=10)
+        
+        # Campo de entrada para el nombre del distrito
+        nombre_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Nombre del distrito")
+        nombre_entry.pack(pady=5)
+        
+        # Lógica para el botón Guardar
+        ctk.CTkButton(
+            self.frame_derecho, 
+            text="Guardar", 
+            command=lambda: (
+                # Obtención del valor de entrada
+                (nombre := nombre_entry.get()),
+                # Verificación de que el campo no esté vacío
+                (ctk.CTkLabel(self.frame_derecho, text="Por favor, ingrese un nombre válido.", font=("Arial", 12)).pack() if not nombre else 
+                # Intento de agregar el distrito
+                (ctk.CTkLabel(self.frame_derecho, text=f"Distrito '{nombre}' agregado con éxito.", font=("Arial", 12)).pack() if self.sistema.agregar_distrito(nombre) else 
+                ctk.CTkLabel(self.frame_derecho, text="Distrito no pudo ser agregado.", font=("Arial", 12)).pack())
+                )
+            )
+        ).pack(pady=10)
+
+
 
     def agregar_ruta(self):
-        origen = ctk.CTkInputDialog(text="Agregar Ruta", title="Ingrese el nombre del distrito de origen:")
-        destino = ctk.CTkInputDialog(text="Agregar Ruta", title="Ingrese el nombre del distrito de destino:")
-        distancia = ctk.CTkInputDialog(text="Agregar Ruta", title="Ingrese la distancia entre los distritos:")
-        if origen and destino and distancia:
-            try:
-                distancia = float(distancia)
-                if self.sistema.agregar_ruta(origen, destino, distancia):
-                    ctk.CTkMessageBox.show_info("Éxito", f"Ruta entre '{origen}' y '{destino}' agregada con éxito.")
-                else:
-                    ctk.CTkMessageBox.show_warning("Advertencia", "Ruta no pudo ser agregada.")
-            except ValueError:
-                ctk.CTkMessageBox.show_warning("Advertencia", "Por favor, ingrese una distancia válida.")
+        self.limpiar_frame_derecho()
+        ctk.CTkLabel(self.frame_derecho, text="Agregar Ruta", font=("Arial", 16)).pack(pady=10)
+
+        # Campos de entrada para origen, destino y distancia
+        origen_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Distrito de origen")
+        origen_entry.pack(pady=5)
+        destino_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Distrito de destino")
+        destino_entry.pack(pady=5)
+        distancia_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Distancia entre distritos")
+        distancia_entry.pack(pady=5)
+
+        # Lógica para el botón Guardar
+        ctk.CTkButton(
+            self.frame_derecho, 
+            text="Guardar", 
+            command=lambda: (
+                # Obtención de los valores de entrada
+                (origen := origen_entry.get()),
+                (destino := destino_entry.get()),
+                (distancia := distancia_entry.get()),
+                # Verificación de que los campos no estén vacíos
+                (ctk.CTkLabel(self.frame_derecho, text="Complete todos los campos.", font=("Arial", 12)).pack() if not origen or not destino or not distancia else 
+                # Intento de agregar la ruta
+                (
+                    # Intento de convertir la distancia a float
+                    (ctk.CTkLabel(self.frame_derecho, text="Por favor, ingrese una distancia válida.", font=("Arial", 12)).pack() if not distancia.replace('.', '', 1).isdigit() else 
+                    # Verificar si se puede agregar la ruta
+                    (ctk.CTkLabel(self.frame_derecho, text=f"Ruta entre '{origen}' y '{destino}' agregada con éxito.", font=("Arial", 12)).pack() if self.sistema.agregar_ruta(origen, destino, float(distancia)) else 
+                    ctk.CTkLabel(self.frame_derecho, text="Ruta no pudo ser agregada.", font=("Arial", 12)).pack())
+                    )
+                )
+                )
+            )
+        ).pack(pady=10)
+
 
     def realizar_orden(self):
-        dni_cliente = ctk.CTkInputDialog(text="Realizar Orden", title="Ingrese el DNI del cliente:")
-        nombre_producto = ctk.CTkInputDialog(text="Realizar Orden", title="Ingrese el nombre del producto:")
-        nombre_distrito = ctk.CTkInputDialog(text="Realizar Orden", title="Ingrese el nombre del distrito:")
-        if dni_cliente and nombre_producto and nombre_distrito:
-            if self.sistema.realizar_orden(dni_cliente, nombre_producto, nombre_distrito):
-                ctk.CTkMessageBox.show_info("Éxito", "Orden realizada con éxito.")
-            else:
-                ctk.CTkMessageBox.show_warning("Advertencia", "Orden no pudo ser agregada.")
+        self.limpiar_frame_derecho()
+        ctk.CTkLabel(self.frame_derecho, text="Realizar Orden", font=("Arial", 16)).pack(pady=10)
+
+        # Entradas para DNI del cliente, nombre del producto y nombre del distrito
+        dni_cliente_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="DNI del cliente")
+        dni_cliente_entry.pack(pady=5)
+        
+        nombre_producto_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Nombre del producto")
+        nombre_producto_entry.pack(pady=5)
+        
+        nombre_distrito_entry = ctk.CTkEntry(self.frame_derecho, placeholder_text="Nombre del distrito")
+        nombre_distrito_entry.pack(pady=5)
+
+        # Botón para realizar la orden
+        ctk.CTkButton(
+            self.frame_derecho, 
+            text="Guardar", 
+            command=lambda: (
+                # Obtención de los valores de entrada
+                (dni_cliente := dni_cliente_entry.get()),
+                (nombre_producto := nombre_producto_entry.get()),
+                (nombre_distrito := nombre_distrito_entry.get()),
+                # Verificación de que los campos no estén vacíos
+                (ctk.CTkLabel(self.frame_derecho, text="Complete todos los campos.", font=("Arial", 12)).pack() if not dni_cliente or not nombre_producto or not nombre_distrito else 
+                # Intento de realizar la orden
+                (
+                    (ctk.CTkMessageBox.show_info("Éxito", "Orden realizada con éxito.") if self.sistema.realizar_orden(dni_cliente, nombre_producto, nombre_distrito) else 
+                    ctk.CTkMessageBox.show_warning("Advertencia", "Orden no pudo ser agregada."))
+                )
+                )
+            )
+        ).pack(pady=10)
+
 
     def procesar_siguiente_orden(self):
+        self.limpiar_frame_derecho()
+        ctk.CTkLabel(self.frame_derecho, text="Procesar Siguiente Orden", font=("Arial", 16)).pack(pady=10)
+
+        # Procesar orden
         orden_procesada = self.sistema.procesar_orden()
+
         if orden_procesada:
             mensaje = (f"Orden procesada:\n"
-                       f"Producto: {orden_procesada.producto.nombre}\n"
-                       f"Cliente: {orden_procesada.cliente.nombre}\n"
-                       f"Distrito: {orden_procesada.distrito.nombre}")
+                    f"Producto: {orden_procesada.producto.nombre}\n"
+                    f"Cliente: {orden_procesada.cliente.nombre}\n"
+                    f"Distrito: {orden_procesada.distrito.nombre}")
             ctk.CTkMessageBox.show_info("Orden Procesada", mensaje)
         else:
             ctk.CTkMessageBox.show_info("Sin Órdenes", "No hay órdenes para procesar.")
 
+
     def mostrar_grafo(self):
+        self.limpiar_frame_derecho()
+        ctk.CTkLabel(self.frame_derecho, text="Grafo de Distritos", font=("Arial", 16)).pack(pady=10)
+
         # Lógica para mostrar el grafo
         distritos = [distr.nombre for distr in self.sistema.grafo_distritos.vertices.values()]
         G = nx.Graph()
@@ -138,12 +257,16 @@ class GUI(ctk.CTk):
         G.add_weighted_edges_from(aristas)
 
         # Mostrar el grafo
+        plt.figure(figsize=(8, 6))  # Ajustar el tamaño de la figura
         pos = nx.spring_layout(G)
         nx.draw_networkx(G, pos, with_labels=True, node_color='lightblue', node_size=2000, font_size=12, font_color='black')
         edge_labels = nx.get_edge_attributes(G, 'weight')
         nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
         plt.title("Grafo de Distritos y Conexiones")
+        
+        # Mostrar el gráfico en un nuevo window
         plt.show()
+
 
 if __name__ == "__main__":
     app = GUI()

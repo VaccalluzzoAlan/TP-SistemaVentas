@@ -59,43 +59,52 @@ class Grafo:
         else:
             return None
 
-    def dijkstra(self, inicio, destino : str = None, camino : bool = False):
+    def dijkstra(self, inicio, destino : str = None, dar_camino : bool = False):
         distancias = {v: float('inf') for v in self.vertices}
-        caminos = [[(inicio, v, self.vertices[v].conexiones[inicio])] for v in self.vertices if (v != inicio) and (inicio in self.vertices[v].conexiones.keys())]
+        # caminos = [[(inicio, v, self.vertices[v].conexiones[inicio])] for v in self.vertices if (v != inicio) and (inicio in self.vertices[v].conexiones.keys())]
         distancias[inicio] = 0
         queue = [(0, inicio)]
-        if camino:
-            nodo_anterior = inicio
-        # print("CAMINOS:", caminos)
+        visitados = set()
+        if dar_camino:
+            predecesores = {v: None for v in self.vertices}
+            # print("PREDECESORES:", predecesores)
 
         while queue:
             # print('1', queue, distancias)
             distancia_actual, vertice_actual = heapq.heappop(queue)
 
+            if vertice_actual in visitados:
+                continue
+            visitados.add(vertice_actual)
+
             if distancia_actual > distancias[vertice_actual]:
+                # print(distancia_actual, ">", distancias[vertice_actual])
                 continue
 
             for vecino, peso in self.vertices[vertice_actual].conexiones.items():
+                # print("2", vecino, peso)
                 distancia = distancia_actual + peso
 
                 if distancia < distancias[vecino]:
-                    if camino:
-                        for c in caminos:
-                            # print(vertice_actual, vecino, distancia)
-                            if c[-1][1] == nodo_anterior and c[-1][1] != destino and c[-1][0] != vecino:
-                                c.append((nodo_anterior, vecino, self.vertices[nodo_anterior].conexiones[vecino] + c[-1][2]))
                     distancias[vecino] = distancia
+                    if dar_camino:
+                        predecesores[vecino] = vertice_actual
+                        # print('P: ', predecesores)
                     heapq.heappush(queue, (distancia, vecino))
-                    if camino:
-                        nodo_anterior = vecino
-                        # print("CAMINOS:", caminos)
-                # print('2', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
+                # print('3', queue, vertice_actual, vecino, self.vertices[vertice_actual].conexiones.items())
 
-        if camino:
-            caminosDist = [(i, c[-1][2]) for i, c in enumerate(caminos)]
-            caminoMinimoIndex = min(caminosDist, key=lambda x: x[1])[0]
-            caminoMinimo = [(arista[0], arista[1]) for arista in caminos[caminoMinimoIndex]]
-            return caminoMinimo if distancias[destino] != float('inf') else None
+        if dar_camino and destino:
+            if distancias[destino] == float('inf'): return None
+            camino : list[str] = []
+            nodo_actual = destino
+
+            while nodo_actual:
+                camino.append(nodo_actual)
+                nodo_actual = predecesores[nodo_actual]
+                # print(camino)
+
+            camino.reverse()
+            return camino
         if destino:
             return distancias[destino] if distancias[destino] != float('inf') else None
         else:
@@ -260,7 +269,7 @@ class SistemaVentas:
         '''
         if not inicio:
             inicio = self.local
-        ruta = self.grafo_distritos.dijkstra(inicio, destino, camino = solo_camino)
+        ruta = self.grafo_distritos.dijkstra(inicio, destino, dar_camino = solo_camino)
         return ruta
     
     def procesar_ordenes(self):
@@ -306,6 +315,7 @@ def test_sistema_ventas():
     # Realizar y procesar órdenes
     sistema.realizar_orden("12345678", "Laptop", "5")
     print(sistema.procesar_ordenes())
+    print(sistema.ruta_mas_corta(destino="5", inicio="Belgrano", solo_camino=True))
 
     return sistema
 

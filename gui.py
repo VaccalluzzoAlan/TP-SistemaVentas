@@ -313,6 +313,9 @@ class GUI:
 
         if destino and inicio:    # Si se especifico un inicio y destino, se enfatiza la ruta y el resto se ve menos.
             nodos_camino = self.sistema.ruta_mas_corta(destino=destino, inicio=inicio, solo_camino=True)
+            if not nodos_camino: 
+                messagebox.showwarning("Advertencia", "No existe ruta entre los dos distritos.")
+                return
             aristas_camino = []
             aristas_buscar = [(a[0], a[1]) for a in aristas]
             for index, nodo in enumerate(nodos_camino):
@@ -323,9 +326,6 @@ class GUI:
                     aristas_camino.append(arista_camino)
                     
             # print(aristas_camino)
-            if not aristas_camino: 
-                messagebox.showwarning("Advertencia", "No existe ruta entre los dos distritos.")
-                return
             # nodos_camino = {nodo for arista in aristas_camino for nodo in arista}    # Todo nodo en la ruta tomada
             nodos_otros = [distr for distr in distritos if distr not in nodos_camino]    # Todo nodo fuera de la ruta
             # print({n:n for n in nodos_camino}, {n:n for n in nodos_otros})

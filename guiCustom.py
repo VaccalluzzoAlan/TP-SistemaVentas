@@ -388,6 +388,97 @@ class GUI(ctk.CTk):
         self.limpiar_frame_derecho()
         ctk.CTkLabel(self.frame_derecho, text="Listados", font=("Arial", 16)).pack(pady=10)
 
+        # Crear pestañas
+        pestanias = ctk.CTkTabview(self.frame_derecho)
+        pestanias.pack(fill="both", expand=True, padx=20, pady=(0,20))
+
+        pestanias.add("Productos")
+        pestanias.add("Clientes")
+        pestanias.add("Distritos")
+        pestanias.add("Rutas")
+        pestanias.add("Ordenes")
+        pestanias.set("Productos")
+
+        # Tabla de productos
+        tabla_prod = ctk.CTkScrollableFrame(pestanias.tab("Productos"))
+        tabla_prod.pack(fill="both", expand=True)
+        tabla_prod.columnconfigure(index=0, weight=1)
+        tabla_prod.columnconfigure(index=1, weight=5)
+        tabla_prod.columnconfigure(index=2, weight=3)
+
+        ctk.CTkLabel(tabla_prod, text="ID", corner_radius=4).grid(row=0, column=0, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_prod, text="Nombre", corner_radius=4).grid(row=0, column=1, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_prod, text="Precio", corner_radius=4).grid(row=0, column=2, sticky="NSEW", padx=2, pady=2)
+
+        for index, prod in enumerate(self.sistema.productos.values()):
+            prod_precio = f"${str(prod.precio)[:-2].zfill(1)}.{str(prod.precio)[-2:].zfill(2)}"
+
+            ctk.CTkLabel(tabla_prod, text=prod.id, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_prod, text=prod.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_prod, text=prod_precio, fg_color="#1F6AA5", corner_radius=4, anchor="e").grid(row=index+1, column=2, sticky="NSEW", padx=2, pady=2)
+
+        # Tabla de clientes
+        tabla_clie = ctk.CTkScrollableFrame(pestanias.tab("Clientes"))
+        tabla_clie.pack(fill="both", expand=True)
+        tabla_clie.columnconfigure(index=0, weight=1)
+        tabla_clie.columnconfigure(index=1, weight=1)
+        tabla_clie.columnconfigure(index=2, weight=7)
+
+        ctk.CTkLabel(tabla_clie, text="ID", corner_radius=4).grid(row=0, column=0, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_clie, text="DNI", corner_radius=4).grid(row=0, column=1, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_clie, text="Nombre", corner_radius=4).grid(row=0, column=2, sticky="NSEW", padx=2, pady=2)
+
+        for index, clie in enumerate(self.sistema.clientes.values()):
+            ctk.CTkLabel(tabla_clie, text=clie.id, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_clie, text=clie.dni, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_clie, text=clie.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=2, sticky="NSEW", padx=2, pady=2)
+
+        # Tablas de distritos y rutas
+        tabla_dist = ctk.CTkScrollableFrame(pestanias.tab("Distritos"))
+        tabla_dist.pack(fill="both", expand=True)
+        tabla_dist.columnconfigure(index=0, weight=1)
+        tabla_dist.columnconfigure(index=1, weight=8)
+
+        ctk.CTkLabel(tabla_dist, text="ID", corner_radius=4).grid(row=0, column=0, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_dist, text="Nombre", corner_radius=4).grid(row=0, column=1, sticky="NSEW", padx=2, pady=2)
+
+        tabla_ruta = ctk.CTkScrollableFrame(pestanias.tab("Rutas"))
+        tabla_ruta.pack(fill="both", expand=True)
+        tabla_ruta.columnconfigure(index=0, weight=3)
+        tabla_ruta.columnconfigure(index=1, weight=3)
+        tabla_ruta.columnconfigure(index=2, weight=1)
+
+        ctk.CTkLabel(tabla_ruta, text="Nombres de Distritos", corner_radius=4).grid(row=0, column=0, sticky="NSEW", padx=2, pady=2, columnspan=2)
+        ctk.CTkLabel(tabla_ruta, text="Distancia", corner_radius=4).grid(row=0, column=2, sticky="NSEW", padx=2, pady=2)
+
+        for index, distr in enumerate(self.sistema.grafo_distritos.vertices.values()):
+            ctk.CTkLabel(tabla_dist, text=distr.id, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_dist, text=distr.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
+            for conex, dista in distr.conexiones.items():
+                ctk.CTkLabel(tabla_ruta, text=distr.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+                ctk.CTkLabel(tabla_ruta, text=conex, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
+                ctk.CTkLabel(tabla_ruta, text=f"{dista} km", fg_color="#1F6AA5", corner_radius=4, anchor="e").grid(row=index+1, column=2, sticky="NSEW", padx=2, pady=2)
+
+        # Tabla de ordenes
+        tabla_orde = ctk.CTkScrollableFrame(pestanias.tab("Ordenes"))
+        tabla_orde.pack(fill="both", expand=True)
+        tabla_orde.columnconfigure(index=0, weight=1)
+        tabla_orde.columnconfigure(index=1, weight=4)
+        tabla_orde.columnconfigure(index=2, weight=2)
+        tabla_orde.columnconfigure(index=3, weight=4)
+
+        ctk.CTkLabel(tabla_orde, text="Cola N°", corner_radius=4).grid(row=0, column=0, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_orde, text="Nombre del Producto", corner_radius=4).grid(row=0, column=1, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_orde, text="DNI del Cliente", corner_radius=4).grid(row=0, column=2, sticky="NSEW", padx=2, pady=2)
+        ctk.CTkLabel(tabla_orde, text="Nombre del Distrito", corner_radius=4).grid(row=0, column=3, sticky="NSEW", padx=2, pady=2)
+
+        for index, ord in enumerate(self.sistema.ordenes.cola):
+            ord : cmhmr.Orden
+            ctk.CTkLabel(tabla_orde, text=index+1, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_orde, text=ord.producto.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_orde, text=ord.cliente.dni, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=2, sticky="NSEW", padx=2, pady=2)
+            ctk.CTkLabel(tabla_orde, text=ord.distrito.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="e").grid(row=index+1, column=3, sticky="NSEW", padx=2, pady=2)
+
 
 if __name__ == "__main__":
     app = GUI()

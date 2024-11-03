@@ -1,8 +1,7 @@
-import customtkinter as ctk
 import cmhmr  # Asegúrate de que tu módulo está en el mismo directorio o en PYTHONPATH
+import customtkinter as ctk
 import networkx as nx
 import matplotlib.pyplot as plt
-from tkinter import messagebox
 
 
 class GUI(ctk.CTk):

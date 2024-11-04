@@ -477,7 +477,7 @@ class GUI(ctk.CTk):
                 if filtro not in prod.nombre.casefold(): continue
                 prod_precio = f"${str(prod.precio)[:-2].zfill(1)}.{str(prod.precio)[-2:].zfill(2)}"
 
-                ctk.CTkLabel(self.tabla_prod, text=prod.id, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+                ctk.CTkLabel(self.tabla_prod, text=prod.id, fg_color="#2B2B2B", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_prod, text=prod.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_prod, text=prod_precio, fg_color="#1F6AA5", corner_radius=4, anchor="e").grid(row=index+1, column=2, sticky="NSEW", padx=2, pady=2)
 
@@ -486,7 +486,7 @@ class GUI(ctk.CTk):
             self.limpiar_tabla(self.tabla_clie)
             for index, clie in enumerate(self.sistema.clientes.values()):
                 if str(filtro) not in clie.dni.casefold() and filtro not in clie.nombre.casefold(): continue
-                ctk.CTkLabel(self.tabla_clie, text=clie.id, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+                ctk.CTkLabel(self.tabla_clie, text=clie.id, fg_color="#2B2B2B", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_clie, text=clie.dni, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_clie, text=clie.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=2, sticky="NSEW", padx=2, pady=2)
 
@@ -497,7 +497,7 @@ class GUI(ctk.CTk):
             self.limpiar_tabla(self.tabla_ruta)
             for index, distr in enumerate(self.sistema.grafo_distritos.vertices.values()):
                 if filtro in distr.nombre.casefold():
-                    ctk.CTkLabel(self.tabla_dist, text=distr.id, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+                    ctk.CTkLabel(self.tabla_dist, text=distr.id, fg_color="#2B2B2B", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
                     ctk.CTkLabel(self.tabla_dist, text=distr.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
                 for conex, dista in distr.conexiones.items():
                     if filtro not in distr.nombre.casefold(): continue
@@ -511,7 +511,7 @@ class GUI(ctk.CTk):
             self.limpiar_tabla(self.tabla_dist)
             for index, distr in enumerate(self.sistema.grafo_distritos.vertices.values()):
                 if filtro not in distr.nombre.casefold(): continue
-                ctk.CTkLabel(self.tabla_dist, text=distr.id, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+                ctk.CTkLabel(self.tabla_dist, text=distr.id, fg_color="#2B2B2B", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_dist, text=distr.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
 
         # Rutas, sin distritos
@@ -532,7 +532,8 @@ class GUI(ctk.CTk):
             for index, ord in enumerate(self.sistema.ordenes.cola):
                 ord : cmhmr.Orden
                 if (filtro != str(index + 1)) and (filtro not in ord.producto.nombre.casefold()) and (filtro not in ord.cliente.dni.casefold()) and (filtro not in ord.distrito.nombre.casefold()): continue
-                ctk.CTkLabel(self.tabla_orde, text=index+1, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
+                index_color = "#4A4A4A" if index == 0 else "#2B2B2B"
+                ctk.CTkLabel(self.tabla_orde, text=index+1, fg_color=index_color, corner_radius=4).grid(row=index+1, column=0, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_orde, text=ord.producto.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="w").grid(row=index+1, column=1, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_orde, text=ord.cliente.dni, fg_color="#1F6AA5", corner_radius=4).grid(row=index+1, column=2, sticky="NSEW", padx=2, pady=2)
                 ctk.CTkLabel(self.tabla_orde, text=ord.distrito.nombre, fg_color="#1F6AA5", corner_radius=4, anchor="e").grid(row=index+1, column=3, sticky="NSEW", padx=2, pady=2)
